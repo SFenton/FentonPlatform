@@ -1,0 +1,27 @@
+{
+  "schema_version": "1",
+  "version": "0.1.0",
+  "trusted_root_required": true,
+  "trusted_runner": "installed-pinned-release",
+  "trusted_reviewers": [],
+  "protected_reviewers": [],
+  "fixture_generation": "synthetic-v1",
+  "build_identity": "local",
+  "protected_paths": [
+    ".fenton/policy.json",
+    "evals/graders/",
+    ".github/workflows/",
+    "tooling/src/fenton_tooling/orchestration.py"
+  ],
+  "acceptance": {
+    "require_exact_sha": true,
+    "require_independent_review": true,
+    "require_executed_tests": true
+  },
+  "authority": {
+    "cross_repo": false,
+    "production": false,
+    "automatic_promotion": false,
+    "provider_calls": false
+  }
+}

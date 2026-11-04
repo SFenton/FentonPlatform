@@ -1,0 +1,72 @@
+name: FentonAppleHarness
+options:
+  bundleIdPrefix: com.sfenton
+  deploymentTarget:
+    iOS: "17.0"
+packages:
+  FentonPlatform:
+    path: ../../..
+targets:
+  FentonAppleHarness:
+    type: application
+    platform: iOS
+    sources:
+      - App
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sfenton.fenton.apple-harness
+      SWIFT_VERSION: "6.0"
+    info:
+      properties:
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default Configuration
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+    dependencies:
+      - package: FentonPlatform
+        product: FentonUIKit
+      - package: FentonPlatform
+        product: FentonAppleTelemetry
+  FentonAppleHarnessUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - UITests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sfenton.fenton.apple-harness.uitests
+      SWIFT_VERSION: "6.0"
+    dependencies:
+      - target: FentonAppleHarness
+      - package: FentonPlatform
+        product: FentonXCUITestSupport
+  FentonAppleHarnessHostedTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - HostedTests
+      - ../Tests/UIKitHosted
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sfenton.fenton.apple-harness.hosted-tests
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: FentonAppleHarness
+      - package: FentonPlatform
+        product: FentonAppleCore
+      - package: FentonPlatform
+        product: FentonAppleTelemetry
+      - package: FentonPlatform
+        product: FentonUIKit
+schemes:
+  FentonAppleHarness:
+    build:
+      targets:
+        FentonAppleHarness: all
+        FentonAppleHarnessHostedTests: [test]
+        FentonAppleHarnessUITests: [test]
+    test:
+      targets:
+        - name: FentonAppleHarnessHostedTests
+        - name: FentonAppleHarnessUITests

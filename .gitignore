@@ -1,0 +1,28 @@
+.venv/
+*.egg-info/
+__pycache__/
+.fenton-state/
+.pytest_cache/
+reports/
+logs/
+
+# Swift/Xcode and Apple validation output
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj/
+*.xcresult/
+*.xcarchive/
+*.app/
+*.dSYM/
+
+# Portable/package output
+build/
+dist/
+
+# Native Windows and Android build state
+**/bin/
+**/obj/
+.gradle/
+.kotlin/
+local.properties

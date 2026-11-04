@@ -1,0 +1,11 @@
+{
+  "schema_version": "1",
+  "default": {"role": "coordinator", "model": "gpt-5.6-luna", "effort": "medium"},
+  "profiles": {
+    "coordinator": {"model": "gpt-5.6-luna", "effort": "medium"},
+    "reviewer": {"model": "gpt-5.6-luna", "effort": "medium"},
+    "implementer": {"model": "gpt-5.6-terra", "effort": "default"}
+  },
+  "allowed_models": ["gpt-5.6-luna", "gpt-5.6-terra"],
+  "external_decisions": false
+}

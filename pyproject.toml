@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fenton-tooling"
+version = "0.1.0"
+description = "Deterministic portable testing, evidence, and bounded repo orchestration"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+dependencies = []
+
+[project.scripts]
+fenton = "fenton_tooling.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "tooling/src"}
+
+[tool.setuptools.packages.find]
+where = ["tooling/src"]
+
+[tool.setuptools.data-files]
+"fenton_tooling_assets/contracts" = ["contracts/schemas/*.json"]
+"fenton_tooling_assets/roles" = ["agents/roles/*.md"]
+"fenton_tooling_assets/advisors" = ["agents/advisors/*.md"]
+"fenton_tooling_assets/adapters" = [".github/agents/*.md", ".claude/agents/*.md"]

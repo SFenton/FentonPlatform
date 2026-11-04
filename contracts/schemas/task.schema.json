@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["task_id","source_sha","state"],"properties":{"task_id":{"type":"string"},"source_sha":{"type":"string","minLength":7},"state":{"enum":["queued","running","verifying","reviewing","accepted","rejected","cancelled"]}}}

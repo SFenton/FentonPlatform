@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "name": "FentonPlatform",
+  "components": {
+    "apple-core": {"paths": ["Package.swift", "platforms/apple/**"], "selectors": ["apple-core"]},
+    "portable-testing": {"paths": ["tooling/src/fenton_tooling/**", "tooling/tests/**", "tools/**"], "selectors": ["portable-unit", "node-secret-scan"]},
+    "execution": {"paths": ["tooling/src/fenton_tooling/execution.py", "tooling/src/fenton_tooling/capacity.py"], "selectors": ["execution-negative"]},
+    "decisions": {"paths": ["tooling/src/fenton_tooling/decisions.py"], "selectors": ["decision-replay"]},
+    "orchestration": {"paths": ["tooling/src/fenton_tooling/orchestration.py"], "selectors": ["task-admission"]},
+    "contracts": {"paths": ["contracts/**", ".fenton/**"], "selectors": ["contract-check"]},
+    "documentation": {"paths": ["docs/**", "README.md", "AGENTS.md"], "selectors": ["docs-check"]},
+    "distribution": {"paths": ["pyproject.toml", "source-license-manifest.json"], "selectors": ["wheel-assets"]},
+    "governance": {"paths": ["agents/**", "evals/**", ".github/**", ".claude/**", "LICENSE", ".gitignore"], "selectors": ["trusted-replay", "policy-check"]}
+  },
+  "dependencies": {
+    "portable-testing": ["execution", "contracts"],
+    "orchestration": ["portable-testing", "contracts"],
+    "decisions": ["contracts"],
+    "distribution": ["portable-testing", "contracts"],
+    "governance": ["contracts", "orchestration"]
+  }
+}

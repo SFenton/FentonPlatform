@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "repo": "SFenton/FestivalNativeApps",
+  "base": {
+    "source_revision": "04aeb01b18961a96ed7432ed58aa77676227f92e",
+    "candidate_revision": "16b0f0ef68d91eb07068a2bf0171a4aec5158e85"
+  },
+  "proposal": {
+    "status": "draft",
+    "url": "https://github.com/SFenton/FestivalNativeApps/pull/848",
+    "merged": false
+  },
+  "shared_revision": "0b9592686a90a89181e442cdc0f5058bca9af001",
+  "surfaces": [
+    "FentonAppleCore observation compatibility adapters",
+    "FentonUIKit Privacy Policy content containment",
+    "FentonUIKit page-sized native sheet mechanics"
+  ],
+  "local_evidence": {
+    "status": "verified-final",
+    "selectors": [
+      "FestivalMobileUIKitUITests/UKSettingsJourneyTests/testPrivacyPolicyOpensAsASheetAndCloses",
+      "FestivalMobileUIKitUITests/UKSettingsJourneyTests/testSettingsAtAX5PassesAScopedAudit"
+    ],
+    "counts": {
+      "passed": 2,
+      "skipped": 0,
+      "failed": 0,
+      "duration_seconds": 80.1,
+      "build": "passed",
+      "fixture_origin": "loopback"
+    }
+  },
+  "review": {
+    "status": "supplemental-review-passed",
+    "notes": "The supplemental API compatibility finding was fixed."
+  },
+  "ci": {
+    "status": "not-qualified",
+    "notes": "Not merged, full-matrix, performance, or private-CI evidence."
+  },
+  "promotion": {
+    "status": "not-qualified",
+    "admission_receipt": false
+  }
+}

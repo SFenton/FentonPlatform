@@ -39,6 +39,7 @@ final class HarnessRootViewController: UIViewController {
     )
     private var populatedPage: PopulatedPageViewController?
     private var hasStartedBenchmark = false
+    private let benchmarkRunID = UUID().uuidString
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -87,6 +88,7 @@ final class HarnessRootViewController: UIViewController {
         guard telemetry.isEnabled, !hasStartedBenchmark else { return }
         hasStartedBenchmark = true
         telemetry.updateMetadata([
+            "benchmarkRunID": benchmarkRunID,
             "windowWidth": String(format: "%.1f", view.bounds.width),
             "windowHeight": String(format: "%.1f", view.bounds.height),
             "scale": String(format: "%.1f", view.window?.screen.scale ?? UIScreen.main.scale)
@@ -114,10 +116,15 @@ private final class PopulatedPageViewController: UIViewController, UITableViewDa
     private let telemetry: FentonTelemetry
     let scrollView = UITableView(frame: .zero, style: .insetGrouped)
     private var scrollStartedAt: UInt64?
+    private var scrollInterval: TelemetryInterval?
+    private var idleInterval: TelemetryInterval?
     private var benchmarkCompletion: (() -> Void)?
+    private var benchmarkGeneration = 0
     private var didRecordFirstPresentation = false
+    private var didDisplayFirstContent = false
+    private var pendingBenchmarkGeneration: Int?
     private var firstDisplayLink: CADisplayLink?
-    private var firstPresentationStart: UInt64 = 0
+    private var firstPresentationInterval: TelemetryInterval?
 
     init(theme: HarnessTheme, telemetry: FentonTelemetry) {
         self.theme = theme
@@ -151,7 +158,7 @@ private final class PopulatedPageViewController: UIViewController, UITableViewDa
         super.viewDidAppear(animated)
         guard !didRecordFirstPresentation else { return }
         didRecordFirstPresentation = true
-        firstPresentationStart = DispatchTime.now().uptimeNanoseconds
+        firstPresentationInterval = telemetry.beginInterval()
         firstDisplayLink = CADisplayLink(target: self, selector: #selector(recordFirstDisplayedContent))
         firstDisplayLink?.add(to: .main, forMode: .common)
     }
@@ -160,54 +167,98 @@ private final class PopulatedPageViewController: UIViewController, UITableViewDa
         super.viewDidDisappear(animated)
         firstDisplayLink?.invalidate()
         firstDisplayLink = nil
+        cancelBenchmark()
     }
 
     @objc private func recordFirstDisplayedContent() {
         firstDisplayLink?.invalidate()
         firstDisplayLink = nil
         let visibleRows = scrollView.indexPathsForVisibleRows?.count ?? 0
-        telemetry.record(
-            TelemetrySample(
-                name: "first-presented-content",
-                elapsedNanoseconds: DispatchTime.now().uptimeNanoseconds - firstPresentationStart,
-                mainThread: Thread.isMainThread,
-                metadata: windowMetadata(visibleRows: visibleRows)
+        if let firstPresentationInterval {
+            telemetry.endInterval(
+                firstPresentationInterval,
+                named: "first-presented-content",
+                metadata: windowMetadata(visibleRows: visibleRows).merging([
+                    "contentState": "first-displayed-frame",
+                    "clockSemantics": "CADisplayLink-tick-after-viewDidAppear"
+                ]) { _, new in new }
             )
-        )
+        }
+        firstPresentationInterval = nil
+        didDisplayFirstContent = true
+        if let generation = pendingBenchmarkGeneration {
+            pendingBenchmarkGeneration = nil
+            scheduleBenchmarkStart(generation: generation)
+        }
     }
 
     func beginBenchmark(completion: @escaping () -> Void) {
+        cancelScrollBenchmark()
+        benchmarkGeneration += 1
+        let generation = benchmarkGeneration
         benchmarkCompletion = completion
-        let idleStart = DispatchTime.now().uptimeNanoseconds
+        guard didDisplayFirstContent else {
+            pendingBenchmarkGeneration = generation
+            return
+        }
+        scheduleBenchmarkStart(generation: generation)
+    }
+
+    private func scheduleBenchmarkStart(generation: Int) {
+        idleInterval = telemetry.beginInterval()
         DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.telemetry.record(
-                TelemetrySample(
-                    name: "idle-main-turn",
-                    elapsedNanoseconds: DispatchTime.now().uptimeNanoseconds - idleStart,
-                    mainThread: Thread.isMainThread,
+            guard let self, self.benchmarkGeneration == generation else { return }
+            if let idleInterval = self.idleInterval {
+                self.telemetry.endInterval(
+                    idleInterval,
+                    named: "idle-main-turn",
                     metadata: self.windowMetadata(visibleRows: self.scrollView.indexPathsForVisibleRows?.count ?? 0)
+                        .merging(["contentState": "idle-main-turn"]) { _, new in new }
                 )
-            )
+            }
+            self.idleInterval = nil
             self.scrollStartedAt = DispatchTime.now().uptimeNanoseconds
+            self.scrollInterval = self.telemetry.beginInterval()
             let bottom = max(0, self.scrollView.contentSize.height - self.scrollView.bounds.height)
             self.scrollView.setContentOffset(CGPoint(x: 0, y: bottom), animated: true)
         }
     }
 
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        guard let scrollStartedAt else { return }
+        guard scrollStartedAt != nil, benchmarkCompletion != nil else { return }
         self.scrollStartedAt = nil
-        telemetry.record(
-            TelemetrySample(
-                name: "populated-scroll",
-                elapsedNanoseconds: DispatchTime.now().uptimeNanoseconds - scrollStartedAt,
-                mainThread: Thread.isMainThread,
+        if let scrollInterval {
+            telemetry.endInterval(
+                scrollInterval,
+                named: "populated-scroll",
                 metadata: windowMetadata(visibleRows: self.scrollView.indexPathsForVisibleRows?.count ?? 0)
+                    .merging(["contentState": "animated-populated-scroll"]) { _, new in new }
             )
-        )
-        benchmarkCompletion?()
+        }
+        self.scrollInterval = nil
+        let completion = benchmarkCompletion
         benchmarkCompletion = nil
+        completion?()
+    }
+
+    private func cancelScrollBenchmark() {
+        benchmarkGeneration += 1
+        pendingBenchmarkGeneration = nil
+        if let idleInterval { telemetry.cancelInterval(idleInterval) }
+        if let scrollInterval { telemetry.cancelInterval(scrollInterval) }
+        idleInterval = nil
+        scrollInterval = nil
+        scrollStartedAt = nil
+        benchmarkCompletion = nil
+    }
+
+    private func cancelBenchmark() {
+        cancelScrollBenchmark()
+        firstDisplayLink?.invalidate()
+        firstDisplayLink = nil
+        if let firstPresentationInterval { telemetry.cancelInterval(firstPresentationInterval) }
+        firstPresentationInterval = nil
+        didDisplayFirstContent = false
     }
 
     private func windowMetadata(visibleRows: Int) -> [String: String] {

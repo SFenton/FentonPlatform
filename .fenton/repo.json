@@ -18,5 +18,19 @@
     "decisions": ["contracts"],
     "distribution": ["portable-testing", "contracts"],
     "governance": ["contracts", "orchestration"]
+  },
+  "recipes": {
+    "portable-unit": {
+      "component": "portable-testing",
+      "platform": "portable",
+      "argv": ["python3", "-m", "unittest", "discover", "tooling/tests"],
+      "selectors": ["portable-unit"],
+      "tier": "change",
+      "fixture": "profile-v1",
+      "build_identity": "local",
+      "cwd": ".",
+      "timeout_seconds": 900,
+      "resources": []
+    }
   }
 }

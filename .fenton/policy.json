@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "trusted_root_required": true,
   "trusted_runner": "installed-pinned-release",
   "trusted_reviewers": [],
@@ -9,9 +9,16 @@
   "build_identity": "local",
   "protected_paths": [
     ".fenton/policy.json",
+    ".fenton/models.json",
+    "contracts/schemas/",
     "evals/graders/",
     ".github/workflows/",
-    "tooling/src/fenton_tooling/orchestration.py"
+    ".github/agents/",
+    ".claude/agents/",
+    "agents/",
+    "pyproject.toml",
+    "tooling/tests/",
+    "tooling/src/fenton_tooling/"
   ],
   "acceptance": {
     "require_exact_sha": true,

@@ -14,6 +14,26 @@ artifact digests. Missing trusted runtime or malformed receipts block admission.
 Capacity status delegates to an existing `devcap` executable (or
 `FENTON_DEVCAP_EXECUTABLE`) and never starts a competing scheduler.
 
+Resource-bearing plans use the canonical lifetime-scoped `devcap run` argv:
+`pool:NAME`, `sim:UDID`, or `device:UDID`. Unsupported quantities, unnamed or
+invalid devices, and a missing bridge are explicit infrastructure failures
+before the child starts. The bridge owns waiting, signal forwarding, locks,
+and device cleanup; tooling does not implement acquire/release locks. An
+isolated owned helper drains output and cleans its child process group,
+including bounded escalation when a child ignores termination, before the
+bridge can release capacity. Zero-resource portable jobs do not require
+`devcap`.
+
+Registered recipes are local profile execution conveniences, not attested
+trusted admission. `fenton run --recipe NAME --repo-root PATH` supplies only
+the recipe's argument vector, selectors, and resource requirements; external
+trusted-runner admission remains separate.
+Changed-path planning fails explicitly when any selected component lacks a
+registered recipe; selection alone never implies tests ran. Repeated XCTest
+case lines are counted once, retaining a failure rather than allowing an
+unapproved rerun to erase it. Gradle console counts remain unqualified until
+an adapter supplies authoritative result artifacts.
+
 Admission is delegated to a separately installed runner named by an external
 `runner.json` manifest (`distribution`, version, executable, package root, and
 package digest). The

@@ -2,6 +2,10 @@
 
 - Maintain measured consumer compatibility records and add performance baselines
   only after matched, independently recorded runs.
+- Obtain independently approved component budgets and baseline-update rules;
+  descriptive simulator measurements do not authorize performance promotion.
+- Qualify repeatable final-source benchmark completion and the full Apple
+  form-factor/accessibility matrix on healthy, available simulator hosts.
 - Obtain qualified consumer landing review, current CI and full-matrix evidence
   for the draft Apple proposals; local pilot passes do not authorize promotion.
 - Qualify experimental Windows/Android UI, accessibility, lifecycle and

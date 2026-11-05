@@ -59,6 +59,12 @@ normal animation configuration; the artifact identifies the arm as
 `baseline-direct-containment` or `shared-containment`. This flag is a benchmark
 arm selector, not production behavior or a performance claim.
 
+Performance qualification requires repeatable populated runs from the exact
+source and binary, complete paired groups and independently approved budgets.
+Old-source comparisons, incomplete fixture completion and successful builds
+alone do not qualify a baseline. Simulator observations never replace physical
+device evidence or the full form-factor/accessibility matrix.
+
 Generate the harness on a Mac with
 `/opt/homebrew/bin/xcodegen generate --spec platforms/apple/Harness/project.yml`.
 The generated project has an explicit `FentonAppleHarness` scheme with a
@@ -67,9 +73,11 @@ simulator-hosted unit-test target covering Core, Telemetry, and the canonical
 UI-test target. Those hosted UIKit tests are distinct from the empty-on-Mac
 conditional SwiftPM UIKit bundle. The app uses generated launch-screen and scene
 manifest settings for its `UIWindowSceneDelegate`; it does not rely on legacy
-compatibility frames. The generated scene manifest enables scene handling;
-`AppDelegate` returns a native `UISceneConfiguration` with the explicit
-`SceneDelegate` class for connecting sessions. The fixture root is
+compatibility frames. Nested XcodeGen `info.properties` declare the single
+window's named scene configuration, delegate and bundle versions; the generated
+`App/Info.plist` stays outside Git. Flattened pseudo-build-settings are not a
+substitute for the scene dictionary. `AppDelegate` returns the matching native
+`UISceneConfiguration` for connecting sessions. The fixture root is
 wrapped in a native navigation controller so the bar and sheet action are
 present in UI journeys. SwiftPM host tests establish pure logic and telemetry
 behavior only; UIKit behavior requires the hosted simulator target.

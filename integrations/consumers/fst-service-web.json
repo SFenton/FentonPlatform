@@ -1,0 +1,39 @@
+{
+  "schema_version": "1",
+  "repo": "SFenton/FortniteFestivalLeaderboardScraper",
+  "base": {
+    "source_revision": "47a29ceedf602b972ec656ea2054fc9ec515bfcd",
+    "candidate_revision": "246079c933d7265ab4ccbd62274db6aab104aee7"
+  },
+  "proposal": {
+    "status": "draft",
+    "url": "https://github.com/SFenton/FortniteFestivalLeaderboardScraper/pull/237",
+    "merged": false
+  },
+  "shared_revision": "bcbfea6f545dd900ee4a824f89487790835a73ed",
+  "surfaces": [
+    "Optional isolated Python wrapper over installed tooling 0.2.0",
+    "Service, shared, web, tooling and documentation selection",
+    "Registered synthetic Node secret-scan recipe"
+  ],
+  "local_evidence": {
+    "status": "verified-final",
+    "selectors": [
+      "tools/secret-scan.test.mjs",
+      "tools/fenton_platform_test.py"
+    ],
+    "counts": {
+      "node": {"executed": 3, "passed": 3, "failed": 0, "skipped": 0},
+      "wrapper": {"executed": 10, "passed": 10, "failed": 0, "skipped": 0}
+    },
+    "fixture_origin": "synthetic",
+    "execution": "Separately installed wheel built from the immutable shared revision",
+    "limitations": "Selection is not execution evidence for the broader service or web suites."
+  },
+  "review": {
+    "status": "scoped-parent-review",
+    "notes": "Shared execution received separate review; both findings have regression tests."
+  },
+  "ci": {"status": "not-qualified"},
+  "promotion": {"status": "not-qualified", "admission_receipt": false}
+}

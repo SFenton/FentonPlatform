@@ -2,3 +2,7 @@ Copyright (c) 2026 SFenton. All rights reserved.
 
 This private repository and its contents are not licensed for copying,
 redistribution, or use by third parties without written permission from SFenton.
+
+This restriction applies to first-party content only. Third-party components
+retain their own licenses and notices, including notices embedded in the Gradle
+wrapper. See source-license-manifest.json and its linked inventories.

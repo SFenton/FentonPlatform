@@ -1,7 +1,16 @@
 {
-  "schema_version": "1",
+  "schema_version": "2",
   "runtime_dependencies": [],
   "build_dependencies": ["setuptools>=61"],
+  "platform_inventories": [
+    "integrations/dependencies/native.json",
+    "integrations/dependencies/windows.json"
+  ],
+  "license_gates": {
+    "native_inventories_are_advisory_until_reviewed": true,
+    "missing_or_proprietary_terms_require_explicit_license_ref": true,
+    "publish_blocked_until_review_required_is_empty": true
+  },
   "ci_actions": [
     {"name": "actions/checkout", "version": "11d5960a326750d5838078e36cf38b85af677262", "tag": "v4"},
     {"name": "actions/setup-python", "version": "a26af69be951a213d495a4c3e4e4022e16d87065", "tag": "v5"}

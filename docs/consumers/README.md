@@ -23,6 +23,9 @@ Current records:
 - [Festival Native Apps](../../integrations/consumers/festival-native-apps.json):
   final local privacy/AX5 pilot evidence, draft PR, not merged or promotion
   qualified.
-- [HASS Native](../../integrations/consumers/hass-native.json): current
-  candidate proof pending; evidence from the divergent historical base is
-  explicitly excluded.
+- [HASS Native](../../integrations/consumers/hass-native.json): current-base
+  hosted pilot evidence passed; the qualified review and CI gates remain held.
+  Evidence from the divergent historical base is explicitly excluded.
+- [FST service/web](../../integrations/consumers/fst-service-web.json): actual
+  installed-tooling Node and wrapper evidence passed. The optional draft
+  proposal grants no operational authority and does not qualify broader suites.

@@ -1,9 +1,9 @@
 # FentonPlatform
 
-Private shared foundations for Fenton consumers. This bootstrap contains the
-portable `fenton-tooling` package, contract schemas, reusable role assets, and
-this repository's own operating profile. Apple sources are intentionally owned
-by the Apple worker and are not part of this bootstrap.
+Private shared native foundations, testing and bounded orchestration for Fenton
+consumers. The root Swift package exposes independently linkable Apple products.
+Portable `fenton-tooling` has its own version and operating profile. Experimental
+Windows and Android libraries have separate native harnesses and dependencies.
 
 ```bash
 python3 -m venv .venv
@@ -16,7 +16,8 @@ python -m unittest discover tooling/tests
 
 The trusted runner must be installed outside a candidate worktree. This package
 does not provide an OS sandbox, merge authority, provider credentials, or live
-consumer/production access. Windows and Android remain future native lanes.
+consumer/production access. See [the documentation index](docs/README.md) for
+implemented surfaces and the remaining qualification gates.
 
 ## Boundaries
 

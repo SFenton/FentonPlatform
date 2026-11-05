@@ -4,7 +4,8 @@ import path from "node:path";
 const required = [
   "docs/README.md", "docs/architecture/README.md", "docs/testing/README.md",
   "docs/testing/tooling.md", "docs/agents/README.md", "docs/roadmap.md",
-  "docs/operations/dependencies.md"
+  "docs/operations/dependencies.md", "docs/windows/README.md",
+  "docs/android/README.md"
 ];
 const missing = required.filter((file) => !fs.existsSync(path.resolve(file)));
 if (missing.length) {

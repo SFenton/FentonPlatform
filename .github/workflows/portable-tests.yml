@@ -23,4 +23,6 @@ jobs:
       - run: python -m fenton_tooling check
         env: {PYTHONPATH: tooling/src}
       - run: python -m py_compile tooling/src/fenton_tooling/*.py
+      - run: node tools/check-dependencies.mjs
+      - run: node --test tools/check-dependencies.test.mjs
       - run: node tools/check-docs.mjs

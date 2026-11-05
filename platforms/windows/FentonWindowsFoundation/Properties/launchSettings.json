@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FentonWindowsFoundation (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "FentonWindowsFoundation (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

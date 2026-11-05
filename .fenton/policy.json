@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "trusted_root_required": true,
   "trusted_runner": "installed-pinned-release",
   "trusted_reviewers": [],
@@ -9,7 +9,9 @@
   "build_identity": "local",
   "protected_paths": [
     ".fenton/policy.json",
+    ".fenton/repo.json",
     ".fenton/models.json",
+    ".fenton/runtime.json",
     "contracts/schemas/",
     "evals/graders/",
     ".github/workflows/",
@@ -17,6 +19,11 @@
     ".claude/agents/",
     "agents/",
     "pyproject.toml",
+    "source-license-manifest.json",
+    "integrations/dependencies/",
+    "tools/check-docs.mjs",
+    "tools/check-dependencies.mjs",
+    "tools/check-dependencies.test.mjs",
     "tooling/tests/",
     "tooling/src/fenton_tooling/"
   ],

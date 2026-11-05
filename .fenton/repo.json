@@ -6,7 +6,7 @@
     "portable-testing": {"paths": ["tooling/src/fenton_tooling/**", "tooling/tests/**", "tools/**"], "selectors": ["portable-unit", "node-secret-scan"]},
     "execution": {"paths": ["tooling/src/fenton_tooling/execution.py", "tooling/src/fenton_tooling/capacity.py"], "selectors": ["execution-negative"]},
     "decisions": {"paths": ["tooling/src/fenton_tooling/decisions.py"], "selectors": ["decision-replay"]},
-    "orchestration": {"paths": ["tooling/src/fenton_tooling/orchestration.py"], "selectors": ["task-admission"]},
+    "orchestration": {"paths": ["tooling/src/fenton_tooling/orchestration.py", "tooling/src/fenton_tooling/runtime.py", "tooling/src/fenton_tooling/hosts.py", "tooling/src/fenton_tooling/learning.py"], "selectors": ["task-admission"]},
     "contracts": {"paths": ["contracts/**", ".fenton/**"], "selectors": ["contract-check"]},
     "documentation": {"paths": ["docs/**", "README.md", "AGENTS.md"], "selectors": ["docs-check"]},
     "distribution": {"paths": ["pyproject.toml", "source-license-manifest.json"], "selectors": ["wheel-assets"]},

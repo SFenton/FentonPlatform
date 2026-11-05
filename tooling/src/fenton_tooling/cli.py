@@ -9,7 +9,7 @@ import sys
 from .capacity import devcap_status
 from .config import load_json, load_profile, select_components, selectors_for
 from .decisions import DecisionQuestion, normalize
-from .model import TestPlan
+from .model import RunResult, TestPlan
 from .runners import plan_from_recipe
 from .orchestration import Task, admission_check, load_task, save_task
 from .model import ContractError, validate_id, validate_sha
@@ -30,10 +30,11 @@ def _git_lines(root, *args):
 
 
 def _result_certifies(result):
-    return (result.get("status") == "passed" and
-            result.get("executed", 0) > 0 and
-            result.get("failed", 0) == 0 and
-            result.get("skipped", 0) < result.get("executed", 0))
+    try:
+        normalized = RunResult(**result)
+    except (TypeError, ValueError, ContractError):
+        return False
+    return normalized.certifies_success
 
 
 def _digest(root, relative_path):

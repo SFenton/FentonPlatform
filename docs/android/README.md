@@ -11,6 +11,12 @@ The pilot uses Java 17, Gradle 8.14.3, Android Gradle Plugin 8.11.0, Kotlin
 contracts. The Compose UI test is an instrumented native test and requires an
 owned emulator; it is not claimed by a JVM build.
 
+With Java 17 and a compatible Android SDK, run the focused library checks from
+`platforms/android` using
+`./gradlew :foundation:testDebugUnitTest :foundation:assembleDebug`
+(`gradlew.bat` on Windows). The recorded build evidence is from Windows; the
+POSIX launcher being executable does not qualify another host.
+
 Direct dependencies are AndroidX Activity Compose 1.10.1, Compose Material 3
 1.4.0 (via the BOM), Compose UI 1.9.4 (via the BOM), Lifecycle Runtime Compose
 2.9.4, and kotlinx-coroutines-android 1.10.2. The resolved graph also includes

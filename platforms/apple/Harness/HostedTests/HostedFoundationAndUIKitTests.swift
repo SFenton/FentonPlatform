@@ -7,12 +7,12 @@ import FentonUIKit
 @MainActor
 final class HostedFoundationAndUIKitTests: XCTestCase {
     func testCorePolicyAndTelemetryRunInTheSimulatorHost() throws {
-        let policy = SplitPolicy()
-        XCTAssertEqual(policy.primaryLength(for: 1_000), 340, accuracy: 0.01)
+        let policy = FentonSplitPolicy()
+        XCTAssertTrue(policy.allowsSplit(size: CGSize(width: 868, height: 400), isRegularWidth: true))
 
         let telemetry = FentonTelemetry(enabled: true)
         telemetry.measure("simulator-hosted") {
-            _ = policy.primaryLength(for: 1_000)
+            _ = policy.allowsSplit(size: CGSize(width: 868, height: 400), isRegularWidth: true)
         }
         XCTAssertEqual(telemetry.snapshot().samples.first?.name, "simulator-hosted")
     }

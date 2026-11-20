@@ -8,8 +8,13 @@ import UIKit
 /// **Why scenes must be asked.** UIKit reads `supportedInterfaceOrientations` when a controller appears or rotates. A folding phone
 /// is first known to be one only after its first hinge reading, which can come after the first read, so the first hinge calls
 /// `setNeedsUpdateOfSupportedInterfaceOrientations()` on every window's root controller. ``FentonRootViewController`` installs this
-/// on its ``FentonHingePresence`` and answers through ``mask(for:presence:info:)``; an app with its own root or an app delegate's
-/// `supportedInterfaceOrientationsFor` calls the same two functions.
+/// on its ``FentonHingePresence`` and answers through ``mask(for:presence:info:)``.
+///
+/// **A root controller can only narrow.** UIKit intersects the root's answer with the app's: the Info.plist declaration, or the
+/// app delegate's `application(_:supportedInterfaceOrientationsFor:)` when it implements one. A phone that declares portrait only
+/// therefore stays portrait however the root answers. To open every orientation after a hinge, the app delegate must answer too,
+/// from the same ``FentonHingePresence``: subclass ``FentonApplicationDelegate``, or call ``mask(for:presence:info:)`` from its own
+/// `supportedInterfaceOrientationsFor`.
 public enum FentonOrientationSupport {
     // MARK: - Mapping
 

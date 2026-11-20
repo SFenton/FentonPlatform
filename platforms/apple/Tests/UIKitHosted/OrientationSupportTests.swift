@@ -66,12 +66,25 @@ final class OrientationSupportTests: XCTestCase {
         XCTAssertEqual(earlier, 1)
     }
 
-    func testTheRootAnswersTheMaskAndAsksTheSceneOnTheFirstHinge() {
+    func testTheRootAnswersTheMaskAndItOpensAfterTheFirstHinge() {
         let presence = FentonHingePresence()
         let root = FentonRootViewController(launchGround: .black, presence: presence, sensors: FakeDuo().sensors)
         XCTAssertEqual(root.supportedInterfaceOrientations, FentonOrientationSupport.mask(for: nil, presence: presence))
         presence.record(hinge: .closed)
         XCTAssertEqual(root.supportedInterfaceOrientations, .all)
+    }
+
+    func testTheApplicationDelegateWidensItsAnswerAfterTheFirstHinge() {
+        final class Delegate: FentonApplicationDelegate {
+            let record = FentonHingePresence()
+            override var presence: FentonHingePresence { record }
+        }
+        let delegate = Delegate()
+        let before = delegate.application(UIApplication.shared, supportedInterfaceOrientationsFor: nil)
+        XCTAssertEqual(before, FentonOrientationSupport.mask(for: nil, presence: FentonHingePresence()), "the declaration until a hinge")
+        XCTAssertNotEqual(before, .all, "narrower than a hinge allows")
+        delegate.record.record(hinge: .closed)
+        XCTAssertEqual(delegate.application(UIApplication.shared, supportedInterfaceOrientationsFor: nil), .all, "a hinge widens it")
     }
 }
 #endif

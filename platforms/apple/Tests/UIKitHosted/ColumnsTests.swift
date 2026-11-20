@@ -342,6 +342,23 @@ final class ColumnsTests: XCTestCase {
         XCTAssertTrue(rig.barHost.items.last === rig.columns.exitBarItem)
     }
 
+    func testCreatingColumnsDoesNotLoadTheRootControllersView() {
+        final class Root: UIViewController {
+            private(set) var loads = 0
+            override func loadView() {
+                loads += 1
+                view = UIView()
+            }
+        }
+        let root = Root()
+        let columns = FentonColumnsViewController(root: root, environment: FentonWindowEnvironment()) { UIViewController() }
+        XCTAssertFalse(root.isViewLoaded, "init leaves the root's view alone")
+        XCTAssertEqual(root.loads, 0)
+        columns.loadViewIfNeeded()
+        XCTAssertTrue(root.view.superview === columns.view, "it loads with the columns' own view")
+        XCTAssertEqual(root.loads, 1)
+    }
+
     func testAColumnsControllerCanTakeAPlainViewAsItsRoot() {
         let environment = FentonWindowEnvironment()
         let rootView = UIView()

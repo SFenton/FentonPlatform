@@ -43,7 +43,13 @@ open class FentonColumnsViewController: UIViewController {
     // MARK: - Inputs
 
     private let rootController: UIViewController?
-    private let rootView: UIView
+    private let suppliedRootView: UIView?
+    /// The root column's view. A root controller's view is read here, when the columns' own view loads, never during `init`.
+    private var rootView: UIView {
+        if let suppliedRootView { return suppliedRootView }
+        // `rootController` is non-nil whenever no view was supplied.
+        return rootController?.view ?? UIView()
+    }
     private let environment: FentonWindowEnvironment
     private let splitPolicy: FentonSplitPolicy
     private let gutter: CGFloat
@@ -108,7 +114,7 @@ open class FentonColumnsViewController: UIViewController {
                 gutter: CGFloat = 1, appearance: FentonColumnsAppearance = FentonColumnsAppearance(), motion: FentonMotion = FentonMotion(),
                 makePlaceholder: @escaping () -> UIViewController) {
         rootController = root
-        rootView = root.view
+        suppliedRootView = nil
         self.environment = environment
         self.splitPolicy = splitPolicy
         self.gutter = gutter
@@ -132,7 +138,7 @@ open class FentonColumnsViewController: UIViewController {
                 gutter: CGFloat = 1, appearance: FentonColumnsAppearance = FentonColumnsAppearance(), motion: FentonMotion = FentonMotion(),
                 makePlaceholder: @escaping () -> UIViewController) {
         rootController = nil
-        self.rootView = rootView
+        suppliedRootView = rootView
         self.environment = environment
         self.splitPolicy = splitPolicy
         self.gutter = gutter

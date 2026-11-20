@@ -91,8 +91,12 @@ open class FentonRootViewController: UIViewController {
 
     // MARK: - Orientation
 
-    /// The orientations the window supports: the Info.plist declaration for the idiom, and every orientation once a hinge has been
-    /// seen (``FentonOrientationSupport``). The first hinge asks the scenes to read this again. Override to add the app's own rule.
+    /// The orientations this root allows: the Info.plist declaration for the idiom, and every orientation once a hinge has been seen
+    /// (``FentonOrientationSupport``). The first hinge asks the scenes to read this again.
+    ///
+    /// UIKit intersects this with the app's own answer (Info.plist, or the app delegate's `supportedInterfaceOrientationsFor`), so
+    /// the root can narrow but never widen. The app delegate must answer from the same presence to open up: subclass
+    /// ``FentonApplicationDelegate``. Override to add the app's own rule.
     open override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         FentonOrientationSupport.mask(for: viewIfLoaded?.window, presence: presence)
     }

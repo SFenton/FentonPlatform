@@ -26,7 +26,7 @@ data-driven layout and no route storage: the app passes pages and tags, the foun
 | `FentonAppleCore` | `FentonSplitPolicy`, `FentonSplitGeometry`, `FentonWindowFold`, `FentonHingeState`, `FentonHingeAvoidance`, `FentonSheetPolicy`, `FentonSheetHeightPolicy`, `FentonHingePresence`, `FentonOrientationPolicy`, `FentonSupportedOrientations`, `FentonScrollEdgeFade`, `FentonAccessibilityFocusChoice`, `FentonMotion`, `FentonWindowEnvironment`, `FentonObservation`, `FentonObservationBag` | no |
 | `FentonAppleTelemetry` | `FentonTelemetry` (opt-in timings and counters) | no |
 | `FentonUIKit` / Environment | `FentonWindowSignals`, `FentonWindowSensors`, `FentonReflow`, `FentonAnimations`, `FentonHingeAvoidingView`, `FentonHingeClearingView` | yes |
-| `FentonUIKit` / Root | `FentonWindowSceneDelegate`, `FentonRootViewController`, `FentonOrientationSupport`, `FentonSceneEvent`, `FentonSceneUpgrade` | yes |
+| `FentonUIKit` / Root | `FentonWindowSceneDelegate`, `FentonRootViewController`, `FentonApplicationDelegate`, `FentonOrientationSupport`, `FentonSceneEvent`, `FentonSceneUpgrade` | yes |
 | `FentonUIKit` / Page | `FentonPageViewController`, `FentonPageHost`, `FentonPageConfiguration`, `FentonBarItems`, `FentonTitleStyle`, `FentonFixedBarTitle`, `FentonHeaderEdgeFade`, `FentonScrollFit`, `FentonScrollLocator`, `FentonPinnedBar` | yes |
 | `FentonUIKit` / Navigation | `FentonNavigationController`, `FentonStackMotion`, `FentonEmbedding` | yes |
 | `FentonUIKit` / Columns | `FentonColumnsViewController`, `FentonColumnEntry`, `FentonColumnsAppearance`, `FentonColumnPopGuarding`, `FentonColumnExitRequesting`, `FentonColumnBarHosting`, `FentonColumnTitleHeader`, `FentonDiscardConfirmation` | yes |
@@ -105,7 +105,7 @@ show(FoundationDetailPage(item: item, environment: environment), sender: self)
 | Back and Close | A bar item from the columns (Close on the first page, Back on later ones) plus a leading-edge pan. A page can block or confirm. |
 | Swipe on a stack | UIKit's own swipes never call `popViewController`, so `FentonNavigationController` keeps them off while `requestPop` is set. `FentonStackMotion`'s edge pan pops through it and is admitted. |
 | Page scroll | The page never writes `contentInset`; the scroll view is `.automatic` and named to the bar with `setContentScrollView(_, for: .top)`. |
-| Orientation | `FentonRootViewController.supportedInterfaceOrientations` answers `FentonOrientationSupport.mask(for:presence:info:)`: the Info.plist set for the idiom, every orientation once a hinge has been seen. The first hinge asks each window's root to re-read it. |
+| Orientation | UIKit intersects the root controller's answer with the app's (Info.plist, or the app delegate's `supportedInterfaceOrientationsFor`), so `FentonRootViewController.supportedInterfaceOrientations` can only narrow. The app delegate must answer too: subclass `FentonApplicationDelegate`, or call `FentonOrientationSupport.mask(for:presence:info:)` from its own delegate, with the same `FentonHingePresence` as the root. Both give the Info.plist set for the idiom, and every orientation once a hinge has been seen; the first hinge asks each window's root to re-read it. |
 | Reduce Motion | Slides become cross-fades; the edge pans still work. |
 
 ## What stays in apps
@@ -136,6 +136,7 @@ show(FoundationDetailPage(item: item, environment: environment), sender: self)
 | `UKNativeExitNavigationController`, `UKStackMotion` | `FentonNavigationController`, `FentonStackMotion` | Direct. The motion takes `FentonMotion`, a Reduce Motion closure and an announce closure. |
 | `UKSheetPlacement` | `FentonSheetPlacement` | `UKHassModal` stays and calls `place`. |
 | `UKRootViewController`, `UKSceneUpgrade` | `FentonRootViewController`, `FentonSceneUpgrade` | NH keeps phases, sign-in, arrival, probes. |
+| `OrientationPolicy`, `HingePresence`, `FentonOrientationSupport` (`HassUI/App/Layout/OrientationPolicy.swift:121`), `UKAppDelegate.supportedInterfaceOrientationsFor` | `FentonOrientationPolicy`, `FentonHingePresence`, `FentonOrientationSupport`, `FentonApplicationDelegate` | NH's own public `FentonOrientationSupport` must be removed or renamed on adoption: module-qualified names collide otherwise. `UKAppDelegate` subclasses `FentonApplicationDelegate` or calls `FentonOrientationSupport.mask(for:presence:info:)` from its existing `supportedInterfaceOrientationsFor`. |
 | `UKSmoothContentSwapView`, `UKWidthAwareCollectionView`, `UKNavigationFlyoutView` | `FentonContentSwapView`, `FentonWidthAwareCollectionView`, `FentonFlyoutView` | Direct. |
 
 ## FestivalNativeApps notes

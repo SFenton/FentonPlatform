@@ -16,6 +16,7 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: com.sfenton.fenton.apple-harness
       SWIFT_VERSION: "6.0"
     info:
+      path: App/Info.plist
       properties:
         UILaunchScreen: {}
         UIApplicationSceneManifest:
@@ -37,6 +38,7 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sfenton.fenton.apple-harness.uitests
       SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: FentonAppleHarness
       - package: FentonPlatform

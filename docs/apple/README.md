@@ -7,8 +7,9 @@ the remote SwiftPM entry point; source remains under `platforms/apple`.
 
 - **FentonAppleCore** — `ObservationBinding`, `ObservationBag`, and pure split
   geometry/policy.
-- **FentonAppleTelemetry** — opt-in elapsed/main-thread samples, counters,
-  resident-memory snapshots where the platform exposes them, and JSON export.
+- **FentonAppleTelemetry** — opt-in elapsed, calling-thread CPU, main-thread
+  CPU, bounded run-loop active/idle samples, counters, resident-memory
+  snapshots where the platform exposes them, and JSON export.
 - **FentonUIKit** — page containment, explicit scroll/accessory registration,
   the reusable ``FentonContentContainmentView`` composition helper, embeddable
   controller hosting, native split containment, and adaptive sheets.
@@ -28,15 +29,28 @@ ocean and sunset themes. It uses a populated 250-row page and a native sheet,
 with accessibility identifiers and a launch-time `--benchmark` opt-in. The
 benchmark flag emits samples through the in-process telemetry API and writes
 `fenton-harness-benchmark.json` to the app Documents directory. The artifact
-reports an actual first-displayed-frame first-presented-content observation, an
-idle main-turn observation, an animated populated-list scroll, process CPU time,
+reports a populated display-link observation after `viewDidAppear`, an
+idle main-turn observation, an animated populated-list scroll, calling-thread
+and main-thread CPU time, run-loop active/idle deltas, process CPU time,
 resident memory, fixture/build metadata, and window/visible-row metadata when
-available. The reload invocation is named separately and is not treated as
-first content. It does not assert a budget or claim a performance win. Choose
-matched simulator/device runs when comparing results.
+available. It carries a run identity and rejects stale completion generations;
+reload is named separately and is not treated as first content. It does not
+assert a budget or claim a performance win. Choose matched simulator/device
+runs when comparing results. The legacy `first-presented-content` sample name
+means the first observed populated display-link tick after `viewDidAppear`,
+not initial app launch, GPU completion or physical-display timing. That
+observation completes before the benchmark starts scrolling.
+
+Run-loop observation is available only when an enabled recorder is constructed
+on the main thread. A background-created recorder still measures calling-thread
+CPU, but reports unavailable main-run-loop values as `nil`, not inferred activity.
+Observer teardown uses Core Foundation's thread-safe run-loop API, without a
+synchronous main-thread dispatch or cross-thread `NSRunLoop` mutation. See
+[Apple's thread-safety distinction](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html).
 Telemetry sample retention is bounded by the recorder's `maxSamples` capacity
-(512 by default); counters and the final structured snapshot remain bounded
-independently of repeated callbacks.
+(512 by default). Active intervals have bounded admission; abandoned tokens
+cannot grow recorder state without limit, and capacity drops have a counter.
+Callers must use fixed counter and metadata vocabularies rather than domain IDs.
 
 For matched harness-only comparisons, add `--baseline-containment` to use
 direct legacy child containment instead of `FentonPageContainerViewController`.
@@ -44,6 +58,12 @@ Both arms use the same populated rows, telemetry, scroll driver, theme, and
 normal animation configuration; the artifact identifies the arm as
 `baseline-direct-containment` or `shared-containment`. This flag is a benchmark
 arm selector, not production behavior or a performance claim.
+
+Performance qualification requires repeatable populated runs from the exact
+source and binary, complete paired groups and independently approved budgets.
+Old-source comparisons, incomplete fixture completion and successful builds
+alone do not qualify a baseline. Simulator observations never replace physical
+device evidence or the full form-factor/accessibility matrix.
 
 Generate the harness on a Mac with
 `/opt/homebrew/bin/xcodegen generate --spec platforms/apple/Harness/project.yml`.
@@ -53,9 +73,11 @@ simulator-hosted unit-test target covering Core, Telemetry, and the canonical
 UI-test target. Those hosted UIKit tests are distinct from the empty-on-Mac
 conditional SwiftPM UIKit bundle. The app uses generated launch-screen and scene
 manifest settings for its `UIWindowSceneDelegate`; it does not rely on legacy
-compatibility frames. Its nested XcodeGen info properties also declare the
-`UIApplicationSceneManifest` configuration and delegate class, while the
-delegate explicitly assigns the same class for reconnects. The fixture root is
+compatibility frames. Nested XcodeGen `info.properties` declare the single
+window's named scene configuration, delegate and bundle versions; the generated
+`App/Info.plist` stays outside Git. Flattened pseudo-build-settings are not a
+substitute for the scene dictionary. `AppDelegate` returns the matching native
+`UISceneConfiguration` for connecting sessions. The fixture root is
 wrapped in a native navigation controller so the bar and sheet action are
 present in UI journeys. SwiftPM host tests establish pure logic and telemetry
 behavior only; UIKit behavior requires the hosted simulator target.
@@ -101,3 +123,5 @@ unregistering or removing the accessory restores the original values.
 Observation closures should use weak ownership. `ObservationBag.observe(owner:apply:)`
 provides a weak-owner form for controller/view lifetimes; the existing closure
 overload remains available for consumer code that already uses `[weak self]`.
+The legacy mainThread sample field and initializer remain source-compatible; CPU and run-loop deltas are the measurement fields for benchmark interpretation. Asynchronous intervals are bound to their creating recorder and thread, reject repeated or cross-recorder completion, and can be cancelled during lifecycle teardown.
+The first-content clock is the CADisplayLink callback after viewDidAppear; it is not initial app launch, physical-display presentation, or GPU-completion timing.

@@ -38,7 +38,9 @@ def verify_external_runner(trusted_root, candidate, require_current=False):
             raise ContractError("trusted runner manifest identity is incomplete")
     executable = os.path.realpath(manifest.get("executable", ""))
     package_root = os.path.realpath(manifest.get("package_root", ""))
-    if not executable or not package_root or not _outside(executable, candidate):
+    if (not executable or not package_root or
+            not _outside(executable, candidate) or
+            not _outside(package_root, candidate)):
         raise ContractError("trusted runner is not external")
     if not os.path.isfile(executable) or not os.path.isdir(package_root):
         raise ContractError("trusted runner distribution is unavailable")

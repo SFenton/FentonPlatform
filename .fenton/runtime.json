@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "mode": "proposal-template",
+  "jobs": [
+    {
+      "job_id": "portable-smoke",
+      "recipe": "portable-unit",
+      "prerequisites": [],
+      "max_attempts": 1,
+      "role": "verifier",
+      "authority": "read-only"
+    }
+  ]
+}

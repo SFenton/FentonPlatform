@@ -51,7 +51,10 @@ def load_task(state_dir, task_id):
     validate_id(task_id, "task id")
     with open(os.path.join(state_dir, "tasks", task_id + ".json"),
               "r", encoding="utf-8") as handle:
-        return Task(**json.load(handle))
+        payload = json.load(handle)
+    if payload.get("task_id") != task_id:
+        raise ValueError("task identity mismatch")
+    return Task(**payload)
 
 
 def admission_check(task, review, current_sha, changed_paths, policy):
@@ -68,6 +71,10 @@ def admission_check(task, review, current_sha, changed_paths, policy):
         failures.append("missing evidence")
     if not review.get("tests_passed"):
         failures.append("missing tests")
+    if review.get("independent") is not True:
+        failures.append("missing independent review")
+    if review.get("receipt_attested") is not True:
+        failures.append("missing externally attested receipt")
     protected = set(policy.get("protected_paths", []))
     if any(any(p == x or p.startswith(x.rstrip("/") + "/") for x in protected)
            for p in changed_paths) and not review.get("protected_approval"):

@@ -9,7 +9,8 @@ import sys
 from .capacity import devcap_status
 from .config import load_json, load_profile, select_components, selectors_for
 from .decisions import DecisionQuestion, normalize
-from .model import TestPlan
+from .model import RunResult, TestPlan
+from .runners import plan_from_recipe
 from .orchestration import Task, admission_check, load_task, save_task
 from .model import ContractError, validate_id, validate_sha
 from .execution import run_plan
@@ -29,10 +30,11 @@ def _git_lines(root, *args):
 
 
 def _result_certifies(result):
-    return (result.get("status") == "passed" and
-            result.get("executed", 0) > 0 and
-            result.get("failed", 0) == 0 and
-            result.get("skipped", 0) < result.get("executed", 0))
+    try:
+        normalized = RunResult(**result)
+    except (TypeError, ValueError, ContractError):
+        return False
+    return normalized.certifies_success
 
 
 def _digest(root, relative_path):
@@ -99,9 +101,11 @@ def _parser():
     select = sub.add_parser("select")
     select.add_argument("paths", nargs="+")
     run = sub.add_parser("run")
-    run.add_argument("--component", required=True)
-    run.add_argument("--command", dest="argv", nargs=argparse.REMAINDER, required=True)
-    run.add_argument("--selector", action="append", required=True)
+    run.add_argument("--component")
+    run.add_argument("--command", dest="argv", nargs=argparse.REMAINDER)
+    run.add_argument("--recipe")
+    run.add_argument("--repo-root")
+    run.add_argument("--selector", action="append")
     run.add_argument("--tier", default="edit")
     run.add_argument("--platform", default="portable")
     run.add_argument("--fixture", default="synthetic-v1")
@@ -175,6 +179,21 @@ def main(argv=None):
                           "selectors": selectors_for(profile, components)}))
         return 0
     if args.command == "run":
+        if args.recipe:
+            if not args.repo_root:
+                raise SystemExit("--repo-root is required with --recipe")
+            try:
+                plan = plan_from_recipe(profile, args.recipe,
+                                        os.path.abspath(args.repo_root), args.tier)
+                result = run_plan(plan)
+                print(json.dumps({"recipe": args.recipe, "result": result.__dict__},
+                                 sort_keys=True))
+                return 0 if result.certifies_success else 1
+            except (ContractError, OSError, ValueError) as exc:
+                print(json.dumps({"status": "infra", "reason": str(exc)}))
+                return 2
+        if not args.component or not args.selector or not args.argv:
+            raise SystemExit("run requires --recipe or command arguments")
         plan = TestPlan(args.component, tuple(args.selector), args.tier,
                         args.platform, tuple(args.argv), args.fixture,
                         args.build, timeout_seconds=args.timeout)
@@ -263,6 +282,8 @@ def main(argv=None):
                 "reviewer": reviewer, "author": artifact.get("author"),
                 "exact_sha": artifact.get("exact_sha"),
                 "tests_passed": bool(derived_evidence),
+                "independent": reviewer != artifact.get("author"),
+                "receipt_attested": bool(derived_evidence),
                 "protected_approval": reviewer in policy.get("protected_reviewers", [])
             }
             accepted, failures = admission_check(

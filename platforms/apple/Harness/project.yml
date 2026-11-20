@@ -12,12 +12,12 @@ targets:
     platform: iOS
     sources:
       - App
-    settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sfenton.fenton.apple-harness
-      SWIFT_VERSION: "6.0"
     info:
       path: App/Info.plist
       properties:
+        CFBundleDisplayName: Fenton Apple Harness
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
@@ -25,6 +25,11 @@ targets:
             UIWindowSceneSessionRoleApplication:
               - UISceneConfigurationName: Default Configuration
                 UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sfenton.fenton.apple-harness
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: NO
+      TARGETED_DEVICE_FAMILY: "1,2"
     dependencies:
       - package: FentonPlatform
         product: FentonUIKit

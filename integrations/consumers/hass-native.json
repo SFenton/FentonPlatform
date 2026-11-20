@@ -1,0 +1,55 @@
+{
+  "schema_version": "1",
+  "repo": "SFenton/Fenton-HASS-Native",
+  "base": {
+    "source_revision": "d4e1320acdeb604629677059e9e9e2c8f0f4038f",
+    "candidate_revision": "f18f11324585e5ee9715ccfa42d6448bf7b2e49a",
+    "candidate_base": "d4e1320acdeb604629677059e9e9e2c8f0f4038f",
+    "current_proof_required": false
+  },
+  "proposal": {
+    "status": "draft",
+    "url": "https://github.com/SFenton/Fenton-HASS-Native/pull/293",
+    "head": "f18f11324585e5ee9715ccfa42d6448bf7b2e49a",
+    "base": "d4e1320acdeb604629677059e9e9e2c8f0f4038f",
+    "files_changed": 10,
+    "merged": false
+  },
+  "shared_revision": "0b9592686a90a89181e442cdc0f5058bca9af001",
+  "surfaces": [
+    "FentonAppleCore observation compatibility adapters",
+    "FentonUIKit UKPageViewController content containment",
+    "UKHassModalController app-owned fitted and custom-detent sheet chrome"
+  ],
+  "local_evidence": {
+    "status": "verified-final-current-base",
+    "counts": {
+      "executed": 2,
+      "passed": 2,
+      "skipped": 0,
+      "failed": 0,
+      "duration_seconds": 1.149,
+      "runtime": "iOS 27.0",
+      "build": "passed",
+      "fixture_origin": "in-process offline hosted fixtures / signed-out owned simulator"
+    },
+    "selectors": [
+      "FentonHomeTests/FentonPlatformPilotHostedTests/testUKObservationCompatibilityUsesTheSharedBag",
+      "FentonHomeTests/UKHostedShellMoreTests/testTheRailsSideInsetsKeepTheContentAndTheChildrenClearOfIt"
+    ],
+    "notes": "Fresh current-base proof covers parent d4e1320acdeb604629677059e9e9e2c8f0f4038f plus candidate f18f11324585e5ee9715ccfa42d6448bf7b2e49a, including the child-layout flush fix; historical divergent 10dc evidence remains excluded."
+  },
+  "review": {
+    "status": "pending-opus-review",
+    "notes": "Opus review and merge remain pending."
+  },
+  "ci": {
+    "status": "blocked-preexisting-catalog",
+    "run_url": "https://github.com/SFenton/Fenton-HASS-Native/actions/runs/41936462104",
+    "notes": "Repo checks fail before Swift because of an unrelated unchanged mockup catalog inFlight entry for claude/duo-widths that was already merged. Private SDK remote access remains unqualified; it is not asserted as the cause."
+  },
+  "promotion": {
+    "status": "not-qualified",
+    "admission_receipt": false
+  }
+}

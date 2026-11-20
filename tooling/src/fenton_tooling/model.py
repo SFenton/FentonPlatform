@@ -1,5 +1,6 @@
 """Typed contracts used by the portable runner."""
 import dataclasses
+import os
 import re
 from typing import Dict, List, Optional, Tuple
 
@@ -21,6 +22,27 @@ def validate_sha(value):
 
 
 @dataclasses.dataclass(frozen=True)
+class ResourceRequirement:
+    capability: str
+    quantity: int = 1
+    exclusive: bool = True
+
+    def __post_init__(self):
+        if not isinstance(self.capability, str) or not re.fullmatch(
+                r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}", self.capability):
+            raise ContractError("invalid resource capability")
+        if self.quantity < 1:
+            raise ContractError("resource quantity must be positive")
+
+
+def _validate_argv(argv):
+    if not isinstance(argv, (tuple, list)) or not argv or any(
+            not isinstance(item, str) or not item or "\x00" in item for item in argv):
+        raise ContractError("command must be a non-empty argument vector")
+    return tuple(argv)
+
+
+@dataclasses.dataclass(frozen=True)
 class TestPlan:
     component: str
     selectors: Tuple[str, ...]
@@ -32,14 +54,27 @@ class TestPlan:
     cwd: str = "."
     timeout_seconds: float = 300.0
     required: bool = True
+    resources: Tuple[ResourceRequirement, ...] = ()
+    repo_root: Optional[str] = None
 
     def __post_init__(self):
-        if not self.component or not self.selectors or any(not x for x in self.selectors):
+        validate_id(self.component, "component")
+        if not self.selectors or any(not isinstance(x, str) or not x for x in self.selectors):
             raise ContractError("component and selectors are required")
         if self.tier not in ("edit", "change", "merge", "nightly", "release"):
             raise ContractError("unknown test tier")
-        if not self.platform or not self.command or any(not x for x in self.command):
+        if not self.platform:
             raise ContractError("platform and argv command are required")
+        _validate_argv(self.command)
+        if self.repo_root is not None:
+            if not isinstance(self.repo_root, str) or not os.path.isabs(self.repo_root):
+                raise ContractError("repo root must be absolute")
+            root = os.path.realpath(self.repo_root)
+            cwd = os.path.realpath(self.cwd)
+            if os.path.commonpath((cwd, root)) != root:
+                raise ContractError("working directory escapes repository root")
+        if any(not isinstance(item, ResourceRequirement) for item in self.resources):
+            raise ContractError("invalid resource requirement")
         if self.timeout_seconds <= 0:
             raise ContractError("timeout must be positive")
 
@@ -72,7 +107,8 @@ class RunResult:
     def certifies_success(self):
         return (self.status == "passed" and self.exit_code == 0 and
                 self.executed > 0 and self.passed > 0 and
-                self.failed == 0 and self.skipped < self.executed)
+                self.failed == 0 and self.skipped < self.executed and
+                not self.reason)
 
 
 @dataclasses.dataclass(frozen=True)

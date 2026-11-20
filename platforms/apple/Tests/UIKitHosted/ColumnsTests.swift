@@ -318,6 +318,48 @@ final class ColumnsTests: XCTestCase {
         XCTAssertEqual(wideChanges, [false, true])
     }
 
+    func testAPagesOwnBarItemsSurviveNarrowAndWideAlongsideTheBackOrCloseItem() {
+        let rig = makeRig()
+        let page = rig.page("detail")
+        let add = UIBarButtonItem(systemItem: .add)
+        let share = UIBarButtonItem(systemItem: .action)
+        page.navigationItem.rightBarButtonItems = [add, share]
+        rig.columns.open(page, tag: nil, animated: false)
+        XCTAssertTrue(rig.barHost.items.contains { $0 === add }, "wide: the page's items ride in the column group")
+        XCTAssertTrue(rig.barHost.items.last === rig.columns.exitBarItem, "beside Close")
+        XCTAssertEqual(page.navigationItem.rightBarButtonItems, [add, share], "the page keeps its own items")
+
+        rig.columns.setWide(false)
+        rig.settle()
+        XCTAssertTrue(LaneBHost.spin(until: { rig.navigation.viewControllers.contains(page) }))
+        XCTAssertEqual(page.navigationItem.rightBarButtonItems, [add, share], "narrow: the stack shows the page's trailing items")
+
+        rig.columns.setWide(true)
+        XCTAssertTrue(LaneBHost.spin(until: { rig.columns.entries.map(\.controller) == [page] }))
+        rig.settle()
+        XCTAssertEqual(page.navigationItem.rightBarButtonItems, [add, share], "wide again: still there")
+        XCTAssertTrue(rig.barHost.items.contains { $0 === add && $0 !== rig.columns.exitBarItem })
+        XCTAssertTrue(rig.barHost.items.last === rig.columns.exitBarItem)
+    }
+
+    func testAColumnsControllerCanTakeAPlainViewAsItsRoot() {
+        let environment = FentonWindowEnvironment()
+        let rootView = UIView()
+        let columns = FentonColumnsViewController(rootView: rootView, environment: environment) { UIViewController() }
+        let window = pageTestWindow(columns, size: CGSize(width: 1024, height: 768))
+        window.layoutIfNeeded()
+        defer { window.isHidden = true }
+        XCTAssertTrue(rootView.superview === columns.view, "the view fills the container")
+        XCTAssertEqual(rootView.frame, columns.view.bounds)
+        XCTAssertTrue(columns.children.isEmpty, "no controller became its child")
+        columns.setWide(true)
+        let detail = UIViewController()
+        columns.open(detail, tag: nil, animated: false)
+        window.layoutIfNeeded()
+        XCTAssertTrue(detail.parent === columns)
+        XCTAssertLessThan(rootView.frame.maxX, detail.view.frame.maxX + 1, "the root stays the leading column")
+    }
+
     func testPushesCollapsedPagesOffLeavesTheStackAlone() {
         let rig = makeRig()
         rig.columns.pushesCollapsedPages = false

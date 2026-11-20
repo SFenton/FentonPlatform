@@ -42,7 +42,8 @@ import UIKit
 open class FentonColumnsViewController: UIViewController {
     // MARK: - Inputs
 
-    private let rootController: UIViewController
+    private let rootController: UIViewController?
+    private let rootView: UIView
     private let environment: FentonWindowEnvironment
     private let splitPolicy: FentonSplitPolicy
     private let gutter: CGFloat
@@ -67,7 +68,6 @@ open class FentonColumnsViewController: UIViewController {
     private var backAnimator: UIViewPropertyAnimator?
     private let exitItem = UIBarButtonItem()
     private var exitAction: (() -> Void)?
-    private var rootView: UIView { rootController.view }
 
     // MARK: - Public state
 
@@ -108,6 +108,31 @@ open class FentonColumnsViewController: UIViewController {
                 gutter: CGFloat = 1, appearance: FentonColumnsAppearance = FentonColumnsAppearance(), motion: FentonMotion = FentonMotion(),
                 makePlaceholder: @escaping () -> UIViewController) {
         rootController = root
+        rootView = root.view
+        self.environment = environment
+        self.splitPolicy = splitPolicy
+        self.gutter = gutter
+        self.appearance = appearance
+        self.motion = motion
+        self.makePlaceholder = makePlaceholder
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    /// Creates columns whose root column is a plain view (a page's scroll view or host), which this controller adds to its own view
+    /// and moves by frame like a controller's view; no controller becomes its child.
+    /// - Parameters:
+    ///   - rootView: The root column's view.
+    ///   - environment: The window's facts: the hinge band and Reduce Motion.
+    ///   - splitPolicy: The rule that sizes the two columns (the minimum pane width).
+    ///   - gutter: The band between the columns when there is no hinge to sit on.
+    ///   - appearance: The ground, the hairline and the words.
+    ///   - motion: The slide's spring and the cross-fade's duration.
+    ///   - makePlaceholder: The empty state shown in the right column while nothing is open.
+    public init(rootView: UIView, environment: FentonWindowEnvironment, splitPolicy: FentonSplitPolicy = FentonSplitPolicy(),
+                gutter: CGFloat = 1, appearance: FentonColumnsAppearance = FentonColumnsAppearance(), motion: FentonMotion = FentonMotion(),
+                makePlaceholder: @escaping () -> UIViewController) {
+        rootController = nil
+        self.rootView = rootView
         self.environment = environment
         self.splitPolicy = splitPolicy
         self.gutter = gutter
@@ -130,10 +155,10 @@ open class FentonColumnsViewController: UIViewController {
 
     open override func viewDidLoad() {
         super.viewDidLoad()
-        addChild(rootController)
+        if let rootController { addChild(rootController) }
         rootView.frame = view.bounds
         view.addSubview(rootView)
-        rootController.didMove(toParent: self)
+        rootController?.didMove(toParent: self)
         band.isUserInteractionEnabled = false
         band.isAccessibilityElement = false
         band.accessibilityElementsHidden = true
@@ -244,7 +269,6 @@ open class FentonColumnsViewController: UIViewController {
             MainActor.assumeIsolated {
                 guard let self, !self.isWide, let navigation = self.navigationController else { return }
                 for page in locals {
-                    page.navigationItem.rightBarButtonItems = nil
                     navigation.pushViewController(page, animated: false)
                 }
                 self.handedOff = locals

@@ -178,5 +178,19 @@ final class SheetPlacementTests: XCTestCase {
         FentonSheetPresenter.configure(folded, configuration: .init(heightPolicy: .mediumAndLarge), in: nil)
         XCTAssertEqual(folded.sheetPresentationController?.detents.count, 1)
     }
+
+    func testThePresenterTakesAnInjectedPresenceInsteadOfTheSharedOne() throws {
+        let presence = FentonHingePresence()
+        presence.record(hinge: .closed)
+        let folded = UIViewController()
+        FentonSheetPresenter.configure(folded, in: nil, presence: presence)
+        XCTAssertEqual(folded.sheetPresentationController?.detents.count, 1, "the injected record says folded")
+        XCTAssertFalse(FentonHingePresence.shared.hasHinge, "the shared record was never touched")
+    }
+
+    func testTheSheetConfigurationIsAPlainValueAnyThreadMayBuild() async {
+        let configuration = await Task.detached { FentonSheetConfiguration(showsGrabber: false) }.value
+        XCTAssertFalse(configuration.showsGrabber)
+    }
 }
 #endif

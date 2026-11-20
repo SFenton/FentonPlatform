@@ -3,7 +3,6 @@ import FentonAppleCore
 import UIKit
 
 /// Native sheet configuration that leaves application appearance and theme ownership untouched.
-@MainActor
 public struct FentonSheetConfiguration: Sendable {
     // MARK: - Placement
 

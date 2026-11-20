@@ -52,6 +52,7 @@ open class FentonRootViewController: UIViewController {
         self.presence = presence
         self.sensors = sensors
         super.init(nibName: nil, bundle: nil)
+        FentonOrientationSupport.install(on: presence)
     }
 
     @available(*, unavailable)
@@ -86,6 +87,14 @@ open class FentonRootViewController: UIViewController {
             await Task.yield()
             self?.dismissLaunchGround(animated: true)
         }
+    }
+
+    // MARK: - Orientation
+
+    /// The orientations the window supports: the Info.plist declaration for the idiom, and every orientation once a hinge has been
+    /// seen (``FentonOrientationSupport``). The first hinge asks the scenes to read this again. Override to add the app's own rule.
+    open override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        FentonOrientationSupport.mask(for: viewIfLoaded?.window, presence: presence)
     }
 
     // MARK: - Status bar

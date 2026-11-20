@@ -161,6 +161,18 @@ final class NavigationControllerTests: XCTestCase {
         XCTAssertTrue(navigation.gestureRecognizerShouldBegin(UITapGestureRecognizer()), "other recognizers are not ours to judge")
     }
 
+    func testTheSystemEdgeSwipeDoesNotBeginDuringATransition() throws {
+        let (navigation, _) = makeStack(2, show: true)
+        let recognizer = try XCTUnwrap(navigation.interactivePopGestureRecognizer)
+        XCTAssertTrue(navigation.gestureRecognizerShouldBegin(recognizer))
+        navigation.pushViewController(UIViewController(), animated: true)
+        XCTAssertNotNil(navigation.transitionCoordinator, "the push is still running")
+        XCTAssertFalse(navigation.gestureRecognizerShouldBegin(recognizer), "a swipe mid-transition would corrupt the stack")
+        pageTurnRunLoop(4, seconds: 0.2)
+        XCTAssertNil(navigation.transitionCoordinator)
+        XCTAssertTrue(navigation.gestureRecognizerShouldBegin(recognizer), "it begins again once the push has settled")
+    }
+
     func testTheContentSwipeIsOffWhileAnAdmissionIsRequired() throws {
         guard #available(iOS 26.0, *) else { throw XCTSkip("iOS 26 content swipe") }
         let (navigation, _) = makeStack(show: true)

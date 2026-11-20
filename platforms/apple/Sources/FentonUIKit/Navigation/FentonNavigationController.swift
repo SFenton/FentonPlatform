@@ -49,10 +49,11 @@ open class FentonNavigationController: UINavigationController, UIGestureRecogniz
         content.isEnabled = false
     }
 
-    /// The edge swipe begins only on a page that has a Back to go to, and only when no admission is required.
+    /// The edge swipe begins only on a page that has a Back to go to, only when no admission is required, and never while another
+    /// transition runs (a swipe during a push or pop would corrupt the stack).
     open func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         guard gestureRecognizer === interactivePopGestureRecognizer else { return true }
-        guard requestPop == nil, viewControllers.count > 1 else { return false }
+        guard requestPop == nil, viewControllers.count > 1, transitionCoordinator == nil else { return false }
         return topViewController?.navigationItem.hidesBackButton != true
     }
 

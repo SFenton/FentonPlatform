@@ -171,8 +171,7 @@ show(FoundationDetailPage(item: item, environment: environment), sender: self)
 
 | Item | Owner |
 |---|---|
-| Cleanup after the owner's uncommitted harness work lands: remove `FentonPageContainerViewController`, `FentonContentContainmentView`, `FentonPaneContainerViewController`, `FentonViewControllerHost`; move `HarnessRootViewController` to the new page base and retire its `--baseline-containment` arm; link this page from `docs/apple/README.md`. | Lane E |
-| Rename `TelemetrySample` and `TelemetrySnapshot` to the `Fenton` prefix. | Lane E |
-| `Harness/project.yml` takes two lines from the owner's work (`info.path` and `GENERATE_INFOPLIST_FILE` on the UI tests) so the committed spec generates with xcodegen 2.45.4. The generated `Harness/App/Info.plist` is not committed. | Merge with the owner's work |
+| Remove `FentonPageContainerViewController`, `FentonContentContainmentView`, `FentonPaneContainerViewController` and `FentonViewControllerHost`, and move `HarnessRootViewController` to the new page base. Only once the owner retires the `--baseline-containment` benchmark arm, which compares against them. The owner's harness and telemetry work has landed on `main` and is merged here; the README now links this page. | Owner decision, then a cleanup lane |
+| Rename `TelemetrySample` and `TelemetrySnapshot` to the `Fenton` prefix. | Cleanup lane |
 | Festival's "cover" split. | Only when Festival asks |
 | Duo pose evidence for columns, sheets and the flyout. | Verifier, with the pose tool |

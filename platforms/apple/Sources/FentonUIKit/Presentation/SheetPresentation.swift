@@ -6,7 +6,7 @@ import FentonAppleCore
 @MainActor
 public struct FentonSheetConfiguration: Sendable {
     /// The native detent arrangement used by the sheet.
-    public var heightPolicy: SheetHeightPolicy
+    public var heightPolicy: FentonSheetHeightPolicy
     /// Whether the system grabber is shown for a resizable sheet.
     public var showsGrabber: Bool
     /// An optional native corner radius; nil leaves the system default.
@@ -14,7 +14,7 @@ public struct FentonSheetConfiguration: Sendable {
 
     /// Creates configuration without changing the presenting app's appearance.
     public init(
-        heightPolicy: SheetHeightPolicy = .mediumAndLarge,
+        heightPolicy: FentonSheetHeightPolicy = .mediumAndLarge,
         showsGrabber: Bool = true,
         cornerRadius: CGFloat? = nil
     ) {

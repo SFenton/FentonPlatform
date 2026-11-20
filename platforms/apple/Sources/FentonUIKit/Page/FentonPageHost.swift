@@ -15,8 +15,13 @@ import UIKit
 /// - its scroll view is not taken over (no fade, no scroll-fit rule): it scrolls and bounces as it did.
 ///
 /// The host forwards the status-bar style and visibility of the hosted controller.
+///
+/// **Subclassing.** An app subclasses the host to give every hosted screen its own bar: override ``barItems()`` (inherited from
+/// ``FentonPageViewController``) to answer the app's buttons, ``syncChrome()`` to change how the screen's `navigationItem` is
+/// mirrored on a sheet, and forward any app protocol (a sheet-fitting protocol, say) by reading ``child``. Pass a `make` closure to
+/// ``wrapped(_:environment:make:)`` so the app's subclass is what wraps a plain controller.
 @MainActor
-public final class FentonPageHost: FentonPageViewController {
+open class FentonPageHost: FentonPageViewController {
     // MARK: - State
 
     /// The hosted screen.
@@ -45,14 +50,22 @@ public final class FentonPageHost: FentonPageViewController {
     public required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
 
     /// `controller` as a page: itself when it already is one (or is a navigation controller, which brings its own bar), else hosted.
-    public static func wrapped(_ controller: UIViewController, environment: FentonWindowEnvironment) -> UIViewController {
+    /// - Parameters:
+    ///   - controller: The screen to show as a page.
+    ///   - environment: The window's facts.
+    ///   - make: Builds the host for a plain controller; an app passes its subclass here. Defaults to ``FentonPageHost``.
+    public static func wrapped(
+        _ controller: UIViewController,
+        environment: FentonWindowEnvironment,
+        make: (UIViewController, FentonWindowEnvironment) -> FentonPageHost = { FentonPageHost(child: $0, environment: $1) }
+    ) -> UIViewController {
         if controller is FentonPageViewController || controller is UINavigationController { return controller }
-        return FentonPageHost(child: controller, environment: environment)
+        return make(controller, environment)
     }
 
     // MARK: - View
 
-    override public func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
         child.view.backgroundColor = child.view.backgroundColor ?? .clear
         FentonEmbedding.embed(child, in: self, container: contentView)
@@ -60,20 +73,20 @@ public final class FentonPageHost: FentonPageViewController {
         if isSheet { mirrorChrome() }
     }
 
-    override public func viewIsAppearing(_ animated: Bool) {
+    override open func viewIsAppearing(_ animated: Bool) {
         super.viewIsAppearing(animated)
         if isSheet { syncChrome() }
     }
 
-    override public func viewDidAppear(_ animated: Bool) {
+    override open func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard linksScroll, !linked, let scroll = FentonScrollLocator.mainScrollView(in: child.view) else { return }
         linked = true
         setPageScrollView(scroll)
     }
 
-    override public var childForStatusBarStyle: UIViewController? { child }
-    override public var childForStatusBarHidden: UIViewController? { child }
+    override open var childForStatusBarStyle: UIViewController? { child }
+    override open var childForStatusBarHidden: UIViewController? { child }
 
     // MARK: - Chrome mirrored from the hosted screen
 
@@ -93,7 +106,9 @@ public final class FentonPageHost: FentonPageViewController {
         syncChrome()
     }
 
-    private func syncChrome() {
+    /// Copies the hosted screen's title, bar items, back button and title view onto the host's navigation item; called on a sheet
+    /// when the screen sets any of them. A subclass overrides it to add or filter items, calling `super` for the rest.
+    open func syncChrome() {
         let source = child.navigationItem
         let host = navigationItem
         if let title = source.title ?? child.title, host.title != title { host.title = title }

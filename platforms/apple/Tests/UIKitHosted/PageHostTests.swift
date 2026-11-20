@@ -10,6 +10,13 @@ private final class StyledChild: UIViewController {
     override var preferredStatusBarStyle: UIStatusBarStyle { style }
 }
 
+/// An app's host: it answers its own bar items for every screen it hosts.
+@MainActor
+private final class AppPageHost: FentonPageHost {
+    let search = UIBarButtonItem(systemItem: .search)
+    override func barItems() -> FentonBarItems { FentonBarItems(trailing: [search]) }
+}
+
 @MainActor
 final class PageHostTests: XCTestCase {
     private let environment = FentonWindowEnvironment()
@@ -78,6 +85,21 @@ final class PageHostTests: XCTestCase {
             XCTAssertTrue(host.navigationItem.rightBarButtonItems?.first === done)
             child.navigationItem.title = "Renamed"
             XCTAssertEqual(host.navigationItem.title, "Renamed")
+        }
+    }
+
+    func testASubclassOfTheHostSuppliesTheBarItemsAndIsWhatWrappedBuilds() {
+        let plain = UIViewController()
+        let wrapped = FentonPageHost.wrapped(plain, environment: environment) { AppPageHost(child: $0, environment: $1) }
+        let host = wrapped as? AppPageHost
+        XCTAssertNotNil(host, "the make closure decides the host class")
+        let navigation = UINavigationController(rootViewController: wrapped)
+        let window = pageTestWindow(navigation)
+        pageTurnRunLoop(2)
+        host?.chromeChanged()
+        withExtendedLifetime(window) {
+            XCTAssertTrue(host?.navigationItem.rightBarButtonItems?.first === host?.search, "the subclass's barItems() reaches the bar")
+            XCTAssertTrue(plain.parent === host)
         }
     }
 

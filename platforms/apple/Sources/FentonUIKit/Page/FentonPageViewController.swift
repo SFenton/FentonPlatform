@@ -71,7 +71,7 @@ open class FentonPageViewController: UIViewController {
     /// Observations of the environment; they end with the page.
     private let bag = FentonObservationBag()
     private var accessoryBar: FentonPinnedBar?
-    private var headerFade: FentonHeaderEdgeFade?
+    private(set) var headerFade: FentonHeaderEdgeFade?
     private let fixedBarTitle: FentonFixedBarTitle
     private var lastTopInset: CGFloat?
     private var didMeasureLayout = false

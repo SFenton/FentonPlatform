@@ -82,6 +82,9 @@ public final class FentonFlyoutView: UIView {
         addSubview(panel)
         // The panel's rows come first for VoiceOver; the close target is reachable after them.
         accessibilityElements = [panel, closeTarget]
+        // An explicit `accessibilityElements` list is read whatever `isHidden` says (measured in the harness: the closed panel's rows
+        // were still reachable off screen), so the closed flyout hides its elements itself.
+        accessibilityElementsHidden = true
         shield.isHidden = true
         dim.alpha = 0
         closeTarget.isHidden = true
@@ -171,6 +174,7 @@ public final class FentonFlyoutView: UIView {
         let token = settleToken
         if open {
             isSettling = false
+            accessibilityElementsHidden = false
             shield.isHidden = false
             closeTarget.isHidden = false
             panel.isHidden = false
@@ -208,6 +212,7 @@ public final class FentonFlyoutView: UIView {
             let finish: (Bool) -> Void = { [weak self] _ in
                 guard let self, self.settleToken == token else { return }
                 self.isSettling = false
+                self.accessibilityElementsHidden = true
                 self.shield.isHidden = true
                 self.closeTarget.isHidden = true
                 self.panel.isHidden = true

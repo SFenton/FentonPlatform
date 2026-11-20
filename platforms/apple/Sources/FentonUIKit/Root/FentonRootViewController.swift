@@ -108,23 +108,11 @@ open class FentonRootViewController: UIViewController {
         let previous = content
         content = controller
         if let controller, controller !== previous {
-            addChild(controller)
-            controller.view.frame = view.bounds
-            controller.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            if let below {
-                view.insertSubview(controller.view, belowSubview: below)
-            } else if let above {
-                view.insertSubview(controller.view, aboveSubview: above)
-            } else {
-                view.insertSubview(controller.view, at: 0)
-            }
-            controller.didMove(toParent: self)
+            let position: FentonEmbedding.Position
+            if let below { position = .below(below) } else if let above { position = .above(above) } else { position = .back }
+            FentonEmbedding.embed(controller, in: self, position: position)
         }
-        if let previous, previous !== controller {
-            previous.willMove(toParent: nil)
-            previous.view.removeFromSuperview()
-            previous.removeFromParent()
-        }
+        if let previous, previous !== controller { FentonEmbedding.remove(previous) }
         if let launchGround { view.bringSubviewToFront(launchGround) }
         setNeedsStatusBarAppearanceUpdate()
     }

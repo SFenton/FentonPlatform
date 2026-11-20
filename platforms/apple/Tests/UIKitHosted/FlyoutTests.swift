@@ -54,6 +54,21 @@ final class FlyoutTests: XCTestCase {
         view.subviews.flatMap { sub in (sub as? FentonFlyoutRow).map { [$0] } ?? rows(in: sub) }
     }
 
+    // MARK: Accessibility tree
+
+    func testAClosedFlyoutHidesItsExplicitElementListAndAnOpenOneShowsIt() throws {
+        let flyout = try makeFlyout()
+        XCTAssertTrue(flyout.accessibilityElementsHidden, "an explicit element list is read whatever isHidden says")
+        flyout.open(animated: false)
+        XCTAssertFalse(flyout.accessibilityElementsHidden)
+        flyout.close(animated: false)
+        XCTAssertTrue(flyout.accessibilityElementsHidden)
+        flyout.open(animated: false)
+        flyout.close(animated: true)
+        XCTAssertFalse(flyout.accessibilityElementsHidden, "still reachable while it slides away")
+        XCTAssertTrue(LaneBHost.spin(until: { flyout.accessibilityElementsHidden }))
+    }
+
     // MARK: Touches
 
     func testAClosedFlyoutLetsEveryTouchThrough() throws {

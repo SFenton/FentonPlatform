@@ -26,7 +26,7 @@ data-driven layout and no route storage: the app passes pages and tags, the foun
 | `FentonAppleCore` | `FentonSplitPolicy`, `FentonSplitGeometry`, `FentonWindowFold`, `FentonHingeState`, `FentonHingeAvoidance`, `FentonSheetPolicy`, `FentonSheetHeightPolicy`, `FentonHingePresence`, `FentonOrientationPolicy`, `FentonSupportedOrientations`, `FentonScrollEdgeFade`, `FentonAccessibilityFocusChoice`, `FentonMotion`, `FentonWindowEnvironment`, `FentonObservation`, `FentonObservationBag` | no |
 | `FentonAppleTelemetry` | `FentonTelemetry` (opt-in timings and counters) | no |
 | `FentonUIKit` / Environment | `FentonWindowSignals`, `FentonWindowSensors`, `FentonReflow`, `FentonAnimations`, `FentonHingeAvoidingView`, `FentonHingeClearingView` | yes |
-| `FentonUIKit` / Root | `FentonWindowSceneDelegate`, `FentonRootViewController`, `FentonSceneEvent`, `FentonSceneUpgrade` | yes |
+| `FentonUIKit` / Root | `FentonWindowSceneDelegate`, `FentonRootViewController`, `FentonOrientationSupport`, `FentonSceneEvent`, `FentonSceneUpgrade` | yes |
 | `FentonUIKit` / Page | `FentonPageViewController`, `FentonPageHost`, `FentonPageConfiguration`, `FentonBarItems`, `FentonTitleStyle`, `FentonFixedBarTitle`, `FentonHeaderEdgeFade`, `FentonScrollFit`, `FentonScrollLocator`, `FentonPinnedBar` | yes |
 | `FentonUIKit` / Navigation | `FentonNavigationController`, `FentonStackMotion`, `FentonEmbedding` | yes |
 | `FentonUIKit` / Columns | `FentonColumnsViewController`, `FentonColumnEntry`, `FentonColumnsAppearance`, `FentonColumnPopGuarding`, `FentonColumnExitRequesting`, `FentonColumnBarHosting`, `FentonColumnTitleHeader`, `FentonDiscardConfirmation` | yes |
@@ -43,7 +43,7 @@ data-driven layout and no route storage: the app passes pages and tags, the foun
 |---|---|---|
 | First content | `FentonWindowSceneDelegate.makeContentViewController(for:)` | its root pages |
 | Root | `FentonWindowSceneDelegate.makeRootViewController(for:)` | a `FentonRootViewController` subclass: phases, sign-in, probes |
-| Pages | `FentonPageViewController` subclass, `barItems()` | its own chrome; `chromeChanged()` when it changes |
+| Pages | `FentonPageViewController` or `FentonPageHost` subclass, `barItems()` | its own chrome; `chromeChanged()` when it changes |
 | Page look | `FentonPageConfiguration`, `FentonMotion`, `FentonColumnsAppearance`, `FentonContentSwapView.Timing` | its tokens |
 | When to split | `FentonSplitPolicy.allowsSplit(size:isRegularWidth:)` then `FentonColumnsViewController.setWide(_:)` | the call, on every layout |
 | Empty column | `FentonColumnsViewController(makePlaceholder:)` | the empty state page |
@@ -76,8 +76,11 @@ let list = FoundationListViewController()
 let columns = FentonColumnsViewController(root: list, environment: environment) { FoundationEmptyPage() }
 let shell = FoundationShellPage(environment: environment, list: list, columns: columns, onMenu: { … }, onSheet: { … })
 let navigation = FentonNavigationController(rootViewController: shell)
-navigation.delegate = FentonStackMotion(navigation: navigation, reduceMotion: { environment.reduceMotion },
-                                        isEnabled: { !columns.isWide })
+// The navigation controller's delegate is weak: keep the motion in a property of the root.
+let motion = FentonStackMotion(navigation: navigation, reduceMotion: { environment.reduceMotion },
+                               isEnabled: { !columns.isWide })
+navigation.delegate = motion
+self.stackMotion = motion
 
 // In the root's viewDidLayoutSubviews: the one rule, by geometry, never by device.
 columns.setWide(policy.allowsSplit(size: view.bounds.size, isRegularWidth: traitCollection.horizontalSizeClass == .regular))
@@ -102,6 +105,7 @@ show(FoundationDetailPage(item: item, environment: environment), sender: self)
 | Back and Close | A bar item from the columns (Close on the first page, Back on later ones) plus a leading-edge pan. A page can block or confirm. |
 | Swipe on a stack | UIKit's own swipes never call `popViewController`, so `FentonNavigationController` keeps them off while `requestPop` is set. `FentonStackMotion`'s edge pan pops through it and is admitted. |
 | Page scroll | The page never writes `contentInset`; the scroll view is `.automatic` and named to the bar with `setContentScrollView(_, for: .top)`. |
+| Orientation | `FentonRootViewController.supportedInterfaceOrientations` answers `FentonOrientationSupport.mask(for:presence:info:)`: the Info.plist set for the idiom, every orientation once a hinge has been seen. The first hinge asks each window's root to re-read it. |
 | Reduce Motion | Slides become cross-fades; the edge pans still work. |
 
 ## What stays in apps
@@ -110,7 +114,7 @@ show(FoundationDetailPage(item: item, environment: environment), sender: self)
 |---|---|
 | Routes, navigators, session phases, sign-in | FentonPlatform never stores or reads a route. |
 | Tokens: colours, fonts, spacing, motion values | The foundation takes them as values (`FentonMotion`, `FentonColumnsAppearance`, `FentonPageConfiguration`). |
-| Copy, including the discard words and Back and Close labels | Neutral English defaults only; apps pass their own. |
+| Copy, including the discard words and Back and Close labels | FentonPlatform ships no localisation resources. The defaults (`FentonColumnsAppearance.backLabel`/`closeLabel`, `FentonDiscardCopy`, `FentonFlyoutView.title`/`closeLabel`) are developer English in public, overridable values; apps pass localised copy. |
 | Server UI, tiles, glass, modal chrome, dials | Not generic. |
 | Layout census, `layoutSubviews` swizzles, Darwin rotation probes | Diagnostics of one app; counters go through `FentonTelemetry.increment`. |
 | Reconnecting overlay, scroll-rate gate, list updater | Read app services. |
@@ -121,10 +125,10 @@ show(FoundationDetailPage(item: item, environment: environment), sender: self)
 |---|---|---|
 | `HassUI.SplitPolicy` | `FentonSplitPolicy` | A wrapper with `minimumPaneWidth` 360; call sites unchanged. |
 | `WindowFold`, `HingeAvoidance`, `DuoSheetPolicy`, `HeaderEdgeFade` | `FentonWindowFold`, `FentonHingeAvoidance`, `FentonSheetPolicy`, `FentonScrollEdgeFade` | Typealiases. `DuoSheetPolicy.deviceHasHinge` becomes `FentonHingePresence`. |
-| `UKObservation`, `UKObservationBag` | `FentonObservation`, `FentonObservationBag` | Typealiases; `around` and the logic tally stay in HassUI. |
+| `UKObservation`, `UKObservationBag` | `FentonObservation`, `FentonObservationBag` | A thin wrapper: HassUI's `UKObservation.around` keeps stored state, so it wraps `FentonObservation` rather than aliasing it; the logic tally stays in HassUI. |
 | `UKShellEnvironment` | `FentonWindowEnvironment` | NH's class composes it; style, chrome, arrival, attention, offline stay NH. |
 | `UKDeviceSignals`, `UKReflow`, `UKHinge` | `FentonWindowSignals`, `FentonReflow`, `FentonHingeAvoidingView` | The `UKHinge` global becomes `environment.band`; the two static overrides become `FentonWindowSensors`. |
-| `UKPageViewController`, `UKPageHost` | `FentonPageViewController`, `FentonPageHost` | NH subclasses add Quick Links, Profile, `HassSheetWidth` in `barItems()`. |
+| `UKPageViewController`, `UKPageHost` | `FentonPageViewController`, `FentonPageHost` | `FentonPageHost` is `open`: NH subclasses it, overrides `barItems()` (Quick Links, Profile, `HassSheetWidth`) and `syncChrome()`, forwards its sheet-fitting protocol by reading `child`, and passes the subclass to `FentonPageHost.wrapped(_:environment:make:)`. |
 | `UKColumnsViewController`, `UKColumnEntry` | `FentonColumnsViewController`, `FentonColumnEntry` | NH passes `makePlaceholder`; tags are `ShellRoute`. The `shell` argument is the window environment; there is no `reflow` argument (the window signals animate a posture change) and a `motion` value replaces `UKMotion`. |
 | `UKColumnPopGuarding`, `UKColumnExitRequesting`, `UKColumnBarHosting`, `UKColumnBar` | `FentonColumnPopGuarding`, `FentonColumnExitRequesting`, `FentonColumnBarHosting` | The columns now build the Back or Close item and hand `[UIBarButtonItem]` to the host; the host places it. |
 | `UKColumnTitleHeader` | `FentonColumnTitleHeader` | Side inset and spacing are arguments; the page attaches it while it is a child of the columns. |

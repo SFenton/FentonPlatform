@@ -1,7 +1,8 @@
 #if os(iOS)
 import UIKit
 
-/// The words of a "discard changes" confirmation. The defaults are neutral English; an app passes its own localised copy.
+/// The words of a "discard changes" confirmation. The defaults are developer English: FentonPlatform ships no
+/// localisation resources, so an app passes its own localised copy.
 public struct FentonDiscardCopy: Sendable, Equatable {
     /// The question.
     public var title = "Discard changes?"

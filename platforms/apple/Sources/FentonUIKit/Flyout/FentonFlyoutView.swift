@@ -15,13 +15,14 @@ import UIKit
 public final class FentonFlyoutView: UIView {
     // MARK: - Properties
 
-    /// The heading's text. Copy belongs to the app: localise it.
+    /// The heading's text. Developer English ("Navigation") by default; copy belongs to the app: supply localised text.
     public var title: String {
         get { panel.title }
         set { panel.title = newValue }
     }
 
-    /// The spoken label of the close button and the scrim target. Copy belongs to the app: localise it.
+    /// The spoken label of the close button and the scrim target. Developer English by default; copy belongs to the app: supply
+    /// localised text.
     public var closeLabel: String = "Close Navigation" {
         didSet {
             panel.closeLabel = closeLabel

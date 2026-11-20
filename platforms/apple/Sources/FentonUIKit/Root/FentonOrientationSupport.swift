@@ -47,7 +47,7 @@ public enum FentonOrientationSupport {
     /// Asks each window's root controller to re-read its supported orientations.
     /// - Parameter windows: The windows to ask; defaults to every connected scene's.
     @MainActor
-    public static func requestUpdate(windows: () -> [UIWindow] = FentonOrientationSupport.connectedWindows) {
+    public static func requestUpdate(windows: @MainActor () -> [UIWindow] = FentonOrientationSupport.connectedWindows) {
         for window in windows() { window.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations() }
     }
 

@@ -1,7 +1,9 @@
+import FentonUIKit
 import UIKit
 
 @main
-final class AppDelegate: UIResponder, UIApplicationDelegate {
+/// Answers orientations from the shared hinge presence, as the foundation fixture's root does (``FentonApplicationDelegate``).
+final class AppDelegate: FentonApplicationDelegate {
     func application(
         _ application: UIApplication,
         configurationForConnecting connectingSceneSession: UISceneSession,

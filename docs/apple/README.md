@@ -3,16 +3,23 @@
 The Apple products use Swift 6 and target iOS 17. The root `Package.swift` is
 the remote SwiftPM entry point; source remains under `platforms/apple`.
 
+The foundation's API, module map, seams and native-home mapping are in
+[foundation.md](foundation.md).
+
 ## Products
 
-- **FentonAppleCore** — `ObservationBinding`, `ObservationBag`, and pure split
-  geometry/policy.
+- **FentonAppleCore** — `FentonObservation`, `FentonObservationBag`, the pure
+  split rule (`FentonSplitPolicy`, `FentonSplitGeometry`), window fold, hinge,
+  sheet and orientation policy, and motion values.
 - **FentonAppleTelemetry** — opt-in elapsed, calling-thread CPU, main-thread
   CPU, bounded run-loop active/idle samples, counters, resident-memory
   snapshots where the platform exposes them, and JSON export.
-- **FentonUIKit** — page containment, explicit scroll/accessory registration,
-  the reusable ``FentonContentContainmentView`` composition helper, embeddable
-  controller hosting, native split containment, and adaptive sheets.
+- **FentonUIKit** — the page base (`FentonPageViewController`, `FentonPageHost`),
+  columns, stack navigation, window signals, the root and scene delegates, and
+  adaptive sheets and flyouts. The earlier `FentonPageContainerViewController`,
+  ``FentonContentContainmentView``, `FentonPaneContainerViewController` and
+  `FentonViewControllerHost` still compile until the follow-ups in the
+  foundation page.
 - **FentonUIKitTestHostSupport** — debug fixture hosting in the app process.
 - **FentonXCUITestSupport** — runner-side waits and visibility assertions.
 
@@ -120,7 +127,7 @@ clearance is always computed from that snapshot, never from the previous
 mutated value. Re-registering another scroller restores the first one;
 unregistering or removing the accessory restores the original values.
 
-Observation closures should use weak ownership. `ObservationBag.observe(owner:apply:)`
+Observation closures should use weak ownership. `FentonObservationBag.observe(owner:apply:)`
 provides a weak-owner form for controller/view lifetimes; the existing closure
 overload remains available for consumer code that already uses `[weak self]`.
 The legacy mainThread sample field and initializer remain source-compatible; CPU and run-loop deltas are the measurement fields for benchmark interpretation. Asynchronous intervals are bound to their creating recorder and thread, reject repeated or cross-recorder completion, and can be cancelled during lifecycle teardown.
